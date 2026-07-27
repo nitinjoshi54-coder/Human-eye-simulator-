@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eye &amp; Lens Optics Lab · Class 10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E1A20; --panel:#14262D; --panel-alt:#1B333B; --line: rgba(239,233,220,0.10);
+    --text:#EFE9DC; --muted:#93A6AB; --gold:#F6C453; --gold-dim: rgba(246,196,83,0.35);
+    --green:#5FD38D; --red:#E4636F; --convex:#7FD1C6; --concave:#E29B5D;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: radial-gradient(120% 140% at 15% -10%, #16303A 0%, var(--bg) 55%, #0A1418 100%);
+    color:var(--text); font-family:'Inter', sans-serif; min-height:100vh; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:22px 18px 60px;}
+  header{margin-bottom:22px;}
+  header .eyebrow{font-family:'IBM Plex Mono', monospace; font-size:11.5px; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); opacity:0.85; margin:0 0 8px;}
+  h1{font-family:'Fraunces', serif; font-weight:600; font-size:clamp(24px,3.6vw,36px); line-height:1.1; margin:0 0 8px; letter-spacing:-0.01em;}
+  header p{color:var(--muted); max-width:680px; line-height:1.55; margin:0; font-size:15px;}
+
+  .layout{display:grid; grid-template-columns: 300px 1fr; gap:18px; align-items:start;}
+  @media (max-width: 860px){ .layout{grid-template-columns:1fr;} }
+
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px;}
+  .panel + .panel{margin-top:16px;}
+  .panel h2{font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin:0 0 12px; font-weight:500;}
+
+  .eyetype-grid{display:flex; flex-direction:column; gap:8px;}
+  .eyetype-btn{display:flex; align-items:center; gap:10px; background:var(--panel-alt); border:1px solid var(--line); color:var(--text); border-radius:10px; padding:11px 12px; font-size:13.5px; font-weight:500; cursor:pointer; text-align:left; width:100%; transition:border-color .15s, background .15s;}
+  .eyetype-btn .dot{width:9px;height:9px;border-radius:50%;background:var(--muted); flex:0 0 auto;}
+  .eyetype-btn.active{border-color:var(--gold); background: rgba(246,196,83,0.10);}
+  .eyetype-btn.active .dot{background:var(--gold);}
+  .eyetype-btn:hover{border-color: rgba(239,233,220,0.28);}
+  .eyetype-btn small{display:block; color:var(--muted); font-weight:400; font-size:11.5px; margin-top:2px;}
+
+  .severity{margin-top:14px;}
+  .severity .row-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;}
+  .severity label{font-size:12.5px; font-weight:600;}
+  .severity .val{font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--gold);}
+  .severity .req{font-size:11.5px; color:var(--muted); margin-top:6px;}
+  .severity .req b{color:var(--red); font-family:'IBM Plex Mono', monospace;}
+
+  .lens-shelf{display:flex; gap:10px;}
+  .lens-chip{flex:1; background:var(--panel-alt); border:1.5px dashed rgba(239,233,220,0.25); border-radius:10px; padding:12px 8px 10px; text-align:center; cursor:grab; user-select:none; touch-action:none; transition:transform .12s, border-color .15s, box-shadow .15s;}
+  .lens-chip:active{cursor:grabbing;}
+  .lens-chip.armed{border-color:var(--gold); box-shadow:0 0 0 1px var(--gold-dim);}
+  .lens-chip svg{display:block; margin:0 auto 6px;}
+  .lens-chip .name{font-size:12.5px; font-weight:600;}
+  .lens-chip .sub{font-size:10.5px; color:var(--muted); margin-top:1px;}
+  .lens-chip.convex .name{color:var(--convex);}
+  .lens-chip.concave .name{color:var(--concave);}
+
+  .hint{font-size:12px; color:var(--muted); margin-top:10px; line-height:1.5;}
+
+  .power-row{margin-top:14px;}
+  .power-row .row-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;}
+  .power-row label{font-size:12.5px; font-weight:600;}
+  .power-row .val{font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--gold);}
+  input[type=range]{width:100%; -webkit-appearance:none; appearance:none; height:5px; border-radius:4px; background:rgba(239,233,220,0.15); outline:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:17px; height:17px; border-radius:50%; background:var(--gold); cursor:pointer; border:2px solid #0E1A20;}
+  input[type=range]::-moz-range-thumb{width:17px; height:17px; border-radius:50%; background:var(--gold); cursor:pointer; border:2px solid #0E1A20;}
+
+  .remove-btn{margin-top:12px; width:100%; background:transparent; border:1px solid var(--line); color:var(--muted); border-radius:8px; padding:8px; font-size:12px; cursor:pointer; font-family:'Inter',sans-serif;}
+  .remove-btn:hover{border-color:var(--red); color:var(--red);}
+
+  .status{border-radius:10px; padding:12px 13px; font-size:13px; line-height:1.55; background:var(--panel-alt); border:1px solid var(--line);}
+  .status .badge{display:inline-block; font-family:'IBM Plex Mono', monospace; font-size:10.5px; letter-spacing:0.06em; text-transform:uppercase; padding:3px 8px; border-radius:20px; margin-bottom:8px;}
+  .badge.green{background:rgba(95,211,141,0.15); color:var(--green);}
+  .badge.red{background:rgba(228,99,111,0.15); color:var(--red);}
+  .badge.neutral{background:rgba(239,233,220,0.08); color:var(--muted);}
+
+  .stage-panel{padding:14px;}
+  .stage-wrap{position:relative; width:100%; aspect-ratio: 800/460; background: radial-gradient(80% 90% at 78% 45%, #10222A 0%, #0B171C 100%); border-radius:10px; overflow:hidden; border:1px solid var(--line);}
+  canvas{position:absolute; inset:0; width:100%; height:100%; display:block;}
+  .dropzone{position:absolute; left:41.25%; width:13.75%; top:11%; height:70%; border:1.5px dashed rgba(246,196,83,0.0); border-radius:8px; transition:border-color .18s, background .18s; cursor:pointer;}
+  .dropzone.hover, .dropzone.armed-ready{border-color: rgba(246,196,83,0.55); background: rgba(246,196,83,0.06);}
+
+  .legend{display:flex; gap:16px; margin-top:12px; flex-wrap:wrap; font-size:11.5px; color:var(--muted);}
+  .legend span{display:inline-flex; align-items:center; gap:6px;}
+  .legend i{width:16px; height:2px; display:inline-block; border-radius:2px;}
+
+  .ghost-chip{position:fixed; pointer-events:none; z-index:999; opacity:0.9; transform:translate(-50%,-50%); transition:opacity .1s;}
+
+  .calc-panel{grid-column: 1 / -1; margin-top:16px; padding:20px;}
+  .calc-grid{display:grid; grid-template-columns: 1.3fr 1fr; gap:22px;}
+  @media (max-width: 860px){ .calc-grid{grid-template-columns:1fr;} }
+  .calc-steps{font-family:'IBM Plex Mono', monospace; font-size:13px; line-height:1.9; background:var(--panel-alt); border:1px solid var(--line); border-radius:10px; padding:14px 16px;}
+  .calc-steps .line{margin:0 0 3px;}
+  .calc-steps .lbl{color:var(--muted);}
+  .calc-steps .res{color:var(--gold); font-weight:600;}
+  .calc-steps .arrow{color:var(--muted); margin:0 6px;}
+  .calc-note{font-size:12.5px; color:var(--muted); margin-top:10px; line-height:1.6;}
+
+  .examples{display:flex; flex-direction:column; gap:10px;}
+  .example{background:var(--panel-alt); border:1px solid var(--line); border-radius:10px; padding:11px 13px; font-size:12.8px; line-height:1.55;}
+  .example b{color:var(--gold); font-family:'IBM Plex Mono', monospace;}
+
+  footer{margin-top:26px; color:var(--muted); font-size:11.5px; line-height:1.6;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Optics Lab · Human Eye · Class 10</p>
+    <h1>See how the eye focuses light — and calculate the exact lens power that fixes it</h1>
+    <p>Set how severe the defect is (using the far point or near point, just like in your textbook), then choose a lens and dial in its power in real dioptres until the image lands on the retina.</p>
+  </header>
+
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <div>
+      <div class="panel">
+        <h2>1 · Choose the eye</h2>
+        <div class="eyetype-grid" id="eyeTypeGrid"></div>
+
+        <div class="severity" id="severityBox" style="display:none;">
+          <div class="row-top">
+            <label id="severityLabel">Far point</label>
+            <span class="val" id="severityVal">200 cm</span>
+          </div>
+          <input type="range" id="severitySlider">
+          <div class="req">Power needed to fix this eye: <b id="reqPowerVal">0.00 D</b></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>2 · Pick &amp; place a lens</h2>
+        <div class="lens-shelf">
+          <div class="lens-chip convex" id="chipConvex" data-type="convex">
+            <svg width="34" height="46" viewBox="0 0 34 46"><path d="M17 2 C 26 2, 30 12, 30 23 C 30 34, 26 44, 17 44 C 8 44, 4 34, 4 23 C 4 12, 8 2, 17 2 Z" fill="none" stroke="#7FD1C6" stroke-width="2"/><path d="M17 2 C 24 8, 24 38, 17 44" fill="none" stroke="#7FD1C6" stroke-width="1.3" opacity="0.55"/></svg>
+            <div class="name">Convex</div>
+            <div class="sub">converging · +D</div>
+          </div>
+          <div class="lens-chip concave" id="chipConcave" data-type="concave">
+            <svg width="34" height="46" viewBox="0 0 34 46"><path d="M8 2 C 2 12, 2 34, 8 44 M26 2 C 32 12, 32 34, 26 44" fill="none" stroke="#E29B5D" stroke-width="2"/></svg>
+            <div class="name">Concave</div>
+            <div class="sub">diverging · −D</div>
+          </div>
+        </div>
+        <p class="hint" id="lensHint">Tap a lens, then tap the dashed zone in front of the eye — or drag it there.</p>
+
+        <div class="power-row" id="powerRow" style="display:none;">
+          <div class="row-top">
+            <label>Lens power</label>
+            <span class="val" id="powerVal">1.00 D</span>
+          </div>
+          <input type="range" id="powerSlider" min="0.25" max="4" step="0.25" value="1">
+        </div>
+        <button class="remove-btn" id="removeBtn" style="display:none;">Remove lens</button>
+      </div>
+
+      <div class="panel">
+        <h2>Result</h2>
+        <div class="status" id="statusBox"></div>
+      </div>
+    </div>
+
+    <!-- STAGE -->
+    <div class="panel stage-panel">
+      <div class="stage-wrap" id="stageWrap">
+        <canvas id="c"></canvas>
+        <div class="dropzone" id="dropzone" title="Place lens here"></div>
+      </div>
+      <div class="legend">
+        <span><i style="background:#F6C453"></i> light ray</span>
+        <span><i style="background:#5FD38D"></i> in focus on retina</span>
+        <span><i style="background:#E4636F"></i> focus point (blurry)</span>
+        <span><i style="background:#7FD1C6"></i> convex lens</span>
+        <span><i style="background:#E29B5D"></i> concave lens</span>
+      </div>
+    </div>
+
+    <!-- CALCULATION -->
+    <div class="panel calc-panel">
+      <h2>3 · How the lens power is actually calculated</h2>
+      <div class="calc-grid">
+        <div>
+          <div class="calc-steps" id="calcSteps"></div>
+          <p class="calc-note">This is the exact method used in your textbook: power of a lens <b>P = 1/f</b>, where <b>f</b> is the focal length in <b>metres</b>. A concave lens has negative power, a convex lens has positive power.</p>
+        </div>
+        <div>
+          <div class="examples" id="examplesBox"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>Teaching model: the ray diagram inside the eye is schematic (not to scale) so it fits on screen, but every dioptre value shown — for the defect and for the lens — is calculated with the real formula P = 1/f used in the CBSE/NCERT Class 10 syllabus (Chapter: The Human Eye and the Colourful World).</footer>
+</div>
+
+<script>
+(function(){
+  // ---------- canvas geometry (schematic, not to scale) ----------
+  const W = 800, H = 460;
+  const LEFT_EDGE = 20, C_LENS_X = 430, CORNEA_X = 520, RETINA_X = 650, END_X = 700;
+  const AXIS_Y = 210;
+  const RAY_HEIGHTS = [-72, -42, 42, 72];
+  const OFFSET_K = 32; // px per dioptre of mismatch, purely for the schematic view
+
+  const EYE_INFO = {
+    normal:    { label:'Normal eye', sub:'Emmetropia', desc:'Light entering the eye bends by just the right amount to meet exactly on the retina.' },
+    myopia:    { label:'Near-sighted eye', sub:'Myopia', desc:'Distant objects look blurry — the eye bends light too much, so the image forms in front of the retina.' },
+    hyperopia: { label:'Far-sighted eye', sub:'Hyperopia', desc:'Close objects look blurry — the eye doesn\u2019t bend light enough, so the image would form behind the retina.' }
+  };
+
+  const state = { eyeType:'normal', farPointCm:200, nearPointCm:100, lens:null, armed:null };
+
+  // ---------- eye type buttons ----------
+  const grid = document.getElementById('eyeTypeGrid');
+  Object.keys(EYE_INFO).forEach(key=>{
+    const info = EYE_INFO[key];
+    const btn = document.createElement('button');
+    btn.className = 'eyetype-btn' + (key===state.eyeType?' active':'');
+    btn.dataset.key = key;
+    btn.innerHTML = `<span class="dot"></span><span><span style="display:block">${info.label}</span><small>${info.sub}</small></span>`;
+    btn.addEventListener('click', ()=>{
+      state.eyeType = key;
+      document.querySelectorAll('.eyetype-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      syncSeverityUI();
+      render();
+    });
+    grid.appendChild(btn);
+  });
+
+  // ---------- severity slider (far point / near point) ----------
+  const severityBox = document.getElementById('severityBox');
+  const severityLabel = document.getElementById('severityLabel');
+  const severityVal = document.getElementById('severityVal');
+  const severitySlider = document.getElementById('severitySlider');
+  const reqPowerVal = document.getElementById('reqPowerVal');
+
+  function syncSeverityUI(){
+    if(state.eyeType==='normal'){
+      severityBox.style.display = 'none';
+    } else if(state.eyeType==='myopia'){
+      severityBox.style.display = '';
+      severityLabel.textContent = 'Far point';
+      severitySlider.min = 50; severitySlider.max = 600; severitySlider.step = 10;
+      severitySlider.value = state.farPointCm;
+      severityVal.textContent = state.farPointCm + ' cm';
+    } else {
+      severityBox.style.display = '';
+      severityLabel.textContent = 'Near point';
+      severitySlider.min = 26; severitySlider.max = 200; severitySlider.step = 2;
+      severitySlider.value = state.nearPointCm;
+      severityVal.textContent = state.nearPointCm + ' cm';
+    }
+    updateReqPowerLabel();
+  }
+  severitySlider.addEventListener('input', ()=>{
+    const v = parseFloat(severitySlider.value);
+    if(state.eyeType==='myopia'){ state.farPointCm = v; severityVal.textContent = v+' cm'; }
+    else { state.nearPointCm = v; severityVal.textContent = v+' cm'; }
+    updateReqPowerLabel();
+    render();
+  });
+  function updateReqPowerLabel(){
+    const p = calcPreq();
+    reqPowerVal.textContent = (p>=0?'+':'') + p.toFixed(2) + ' D';
+  }
+
+  // ---------- real physics: P = 1/f ----------
+  function calcPreq(){
+    if(state.eyeType==='normal') return 0;
+    if(state.eyeType==='myopia'){
+      const farM = state.farPointCm/100;
+      return -1/farM;
+    }
+    // hyperopia
+    const nearM = state.nearPointCm/100;
+    return (1/0.25) - (1/nearM);
+  }
+
+  function lensPowerSigned(){
+    if(!state.lens) return 0;
+    return state.lens.type==='concave' ? -state.lens.power : state.lens.power;
+  }
+
+  function mismatch(){ return lensPowerSigned() - calcPreq(); }
+
+  function focusX(){
+    const m = mismatch();
+    let off = -m * OFFSET_K;
+    off = Math.max(-160, Math.min(200, off));
+    return RETINA_X + off;
+  }
+
+  function traceRay(h0){
+    const fx = focusX();
+    const slope = (0 - h0) / (fx - CORNEA_X);
+    const hEnd = h0 + slope*(END_X-CORNEA_X);
+    return [
+      {x:LEFT_EDGE, y:AXIS_Y+h0},
+      {x:CORNEA_X, y:AXIS_Y+h0},
+      {x:END_X, y:AXIS_Y+hEnd}
+    ];
+  }
+
+  // ---------- canvas ----------
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  function resize(){
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio||1, 2);
+    canvas.width = rect.width*dpr;
+    canvas.height = rect.height*dpr;
+    ctx.setTransform(dpr*(rect.width/W), 0,0, dpr*(rect.height/H), 0,0);
+    render();
+  }
+  window.addEventListener('resize', resize);
+
+  let dashOffset = 0;
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function drawEyeAnatomy(fx, inFocus){
+    ctx.beginPath();
+    ctx.ellipse((CORNEA_X-18+RETINA_X+18)/2, AXIS_Y, (RETINA_X+18-(CORNEA_X-18))/2, 118, 0, 0, Math.PI*2);
+    ctx.strokeStyle = 'rgba(239,233,220,0.28)'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = 'rgba(239,233,220,0.03)'; ctx.fill();
+
+    ctx.beginPath(); ctx.arc(CORNEA_X-40, AXIS_Y, 60, -0.62, 0.62);
+    ctx.strokeStyle = 'rgba(239,233,220,0.35)'; ctx.lineWidth = 2; ctx.stroke();
+
+    ctx.beginPath(); ctx.ellipse(CORNEA_X, AXIS_Y, 12, 62, 0, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(246,196,83,0.10)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(246,196,83,0.55)'; ctx.lineWidth = 1.6; ctx.stroke();
+
+    ctx.beginPath(); ctx.arc(CORNEA_X-52, AXIS_Y, 5.5, 0, Math.PI*2);
+    ctx.fillStyle = '#0E1A20'; ctx.fill();
+
+    const retinaColor = inFocus ? '#5FD38D' : '#E4636F';
+    ctx.beginPath(); ctx.arc(RETINA_X+30, AXIS_Y, 62, Math.PI-0.62, Math.PI+0.62);
+    ctx.strokeStyle = retinaColor; ctx.lineWidth = 3;
+    ctx.globalAlpha = inFocus ? (0.55+0.35*Math.sin(dashOffset/18)) : 0.85;
+    ctx.stroke(); ctx.globalAlpha = 1;
+
+    ctx.beginPath(); ctx.moveTo(RETINA_X+10, AXIS_Y); ctx.lineTo(RETINA_X+34, AXIS_Y);
+    ctx.strokeStyle = 'rgba(239,233,220,0.3)'; ctx.lineWidth = 8; ctx.stroke();
+
+    ctx.font = "11px 'IBM Plex Mono', monospace";
+    ctx.fillStyle = 'rgba(239,233,220,0.5)'; ctx.textAlign = 'center';
+    ctx.fillText('retina', RETINA_X, AXIS_Y+150);
+    ctx.fillText('lens', CORNEA_X, AXIS_Y+150);
+  }
+
+  function drawCorrectiveLens(){
+    if(!state.lens) return;
+    const strength = Math.min(state.lens.power/4, 1);
+    const half = 58;
+    ctx.save();
+    ctx.translate(C_LENS_X, AXIS_Y);
+    ctx.lineWidth = 2.4;
+    ctx.strokeStyle = state.lens.type==='convex' ? '#7FD1C6' : '#E29B5D';
+    ctx.fillStyle = state.lens.type==='convex' ? 'rgba(127,209,198,0.10)' : 'rgba(226,155,93,0.10)';
+    const bulge = 6 + strength*13;
+    ctx.beginPath();
+    if(state.lens.type==='convex'){
+      ctx.moveTo(0,-half); ctx.quadraticCurveTo(bulge, 0, 0, half); ctx.quadraticCurveTo(-bulge, 0, 0, -half);
+    } else {
+      ctx.moveTo(-bulge*0.5,-half); ctx.quadraticCurveTo(bulge*0.7, 0, -bulge*0.5, half);
+      ctx.moveTo(bulge*0.5,-half); ctx.quadraticCurveTo(-bulge*0.7, 0, bulge*0.5, half);
+    }
+    ctx.fill(); ctx.stroke(); ctx.restore();
+
+    ctx.font = "11px 'IBM Plex Mono', monospace"; ctx.textAlign = 'center';
+    ctx.fillStyle = state.lens.type==='convex' ? '#7FD1C6' : '#E29B5D';
+    ctx.fillText(state.lens.type==='convex' ? 'convex lens' : 'concave lens', C_LENS_X, AXIS_Y-78);
+  }
+
+  function render(){
+    ctx.clearRect(0,0,W,H);
+    const m = mismatch();
+    const inFocus = Math.abs(m) <= 0.15;
+    const fx = focusX();
+
+    RAY_HEIGHTS.forEach(h0=>{
+      const pts = traceRay(h0);
+      ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+      for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x, pts[i].y);
+      ctx.strokeStyle = '#F6C453'; ctx.lineWidth = 1.6; ctx.globalAlpha = 0.75;
+      ctx.setLineDash([7,5]); ctx.lineDashOffset = -dashOffset;
+      ctx.shadowColor = 'rgba(246,196,83,0.5)'; ctx.shadowBlur = 4;
+      ctx.stroke(); ctx.setLineDash([]); ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+    });
+
+    drawEyeAnatomy(fx, inFocus);
+    drawCorrectiveLens();
+
+    let fxDraw = fx, clamped=false;
+    if(fxDraw > END_X){ fxDraw = END_X; clamped=true; }
+    if(fxDraw < LEFT_EDGE){ fxDraw = LEFT_EDGE; clamped=true; }
+    ctx.beginPath(); ctx.arc(fxDraw, AXIS_Y, 5.5, 0, Math.PI*2);
+    ctx.fillStyle = inFocus ? '#5FD38D' : '#E4636F';
+    ctx.shadowColor = inFocus ? '#5FD38D' : '#E4636F'; ctx.shadowBlur = 10;
+    ctx.fill(); ctx.shadowBlur = 0;
+
+    updateStatus(m, inFocus);
+    updateCalcPanel();
+  }
+
+  function updateStatus(m, inFocus){
+    const box = document.getElementById('statusBox');
+    const Preq = calcPreq();
+    const Plens = lensPowerSigned();
+    const info = EYE_INFO[state.eyeType];
+    let badge, msg;
+    if(state.eyeType==='normal' && !state.lens){
+      badge = '<span class="badge green">Clear vision</span>';
+      msg = info.desc;
+    } else if(inFocus){
+      badge = '<span class="badge green">Clear vision</span>';
+      msg = `${(Plens>0?'+':'')+Plens.toFixed(2)} D matches the ${Preq<0?'&minus;':'+' }${Math.abs(Preq).toFixed(2)} D this eye needs. Image lands right on the retina.`;
+    } else if(!state.lens){
+      badge = '<span class="badge red">Blurry</span>';
+      msg = `${info.desc} You need about <b>${(Preq>0?'+':'')+Preq.toFixed(2)} D</b> (${Preq<0?'concave':'convex'}) to fix this.`;
+    } else {
+      const diff = Preq - Plens;
+      badge = '<span class="badge red">Blurry</span>';
+      msg = `Your lens is ${(Plens>0?'+':'')+Plens.toFixed(2)} D, but this eye needs ${(Preq>0?'+':'')+Preq.toFixed(2)} D — off by ${Math.abs(diff).toFixed(2)} D. `
+          + (m>0 ? 'Image now forms in front of the retina — try reducing the power, or switch lens type.'
+                 : 'Image forms behind the retina — try increasing the power, or switch lens type.');
+    }
+    box.innerHTML = badge + '<br>' + msg;
+  }
+
+  function updateCalcPanel(){
+    const steps = document.getElementById('calcSteps');
+    if(state.eyeType==='normal'){
+      steps.innerHTML = `<div class="line lbl">No correction needed — P = 1/f is already matched to the retina.</div>`;
+      return;
+    }
+    if(state.eyeType==='myopia'){
+      const farM = (state.farPointCm/100);
+      const P = calcPreq();
+      steps.innerHTML = `
+        <div class="line"><span class="lbl">Far point&nbsp;=</span> ${state.farPointCm} cm = <span class="res">${farM.toFixed(2)} m</span></div>
+        <div class="line lbl">Concave lens must form the image of a distant object at the far point:</div>
+        <div class="line">f = &minus;(far point) = <span class="res">&minus;${farM.toFixed(2)} m</span></div>
+        <div class="line">P = 1/f = 1 / (&minus;${farM.toFixed(2)})<span class="arrow">=</span><span class="res">${P.toFixed(2)} D</span></div>
+      `;
+    } else {
+      const nearM = state.nearPointCm/100;
+      const P = calcPreq();
+      steps.innerHTML = `
+        <div class="line"><span class="lbl">Near point&nbsp;=</span> ${state.nearPointCm} cm &nbsp; <span class="lbl">Normal near point = 25 cm</span></div>
+        <div class="line lbl">Using 1/f = 1/v &minus; 1/u, object at u = &minus;25 cm, image at v = &minus;${state.nearPointCm} cm:</div>
+        <div class="line">1/f = 1/25 &minus; 1/${state.nearPointCm} &nbsp;(all in cm)</div>
+        <div class="line">P = 100/25 &minus; 100/${state.nearPointCm}<span class="arrow">=</span><span class="res">${P.toFixed(2)} D</span></div>
+      `;
+    }
+  }
+
+  const EXAMPLES = [
+    { t:'Far point = 5 m', d:'A slightly myopic person cannot see clearly beyond 5 m. f = &minus;5 m &rarr; P = 1/(&minus;5) = <b>&minus;0.20 D</b> (thin concave lens).' },
+    { t:'Far point = 1.2 m', d:'A more myopic eye. f = &minus;1.2 m &rarr; P = 1/(&minus;1.2) = <b>&minus;0.83 D</b>.' },
+    { t:'Near point = 1 m', d:'A hyperopic person\u2019s near point has shifted from 25 cm to 1 m. P = 100/25 &minus; 100/100 = 4 &minus; 1 = <b>+3.00 D</b> (convex lens).' }
+  ];
+  const examplesBox = document.getElementById('examplesBox');
+  EXAMPLES.forEach(ex=>{
+    const div = document.createElement('div');
+    div.className = 'example';
+    div.innerHTML = `<b>${ex.t}</b><br>${ex.d}`;
+    examplesBox.appendChild(div);
+  });
+
+  // ---------- lens placement UI ----------
+  const chips = { convex: document.getElementById('chipConvex'), concave: document.getElementById('chipConcave') };
+  const dropzone = document.getElementById('dropzone');
+  const powerRow = document.getElementById('powerRow');
+  const powerSlider = document.getElementById('powerSlider');
+  const powerVal = document.getElementById('powerVal');
+  const removeBtn = document.getElementById('removeBtn');
+  const lensHint = document.getElementById('lensHint');
+
+  function placeLens(type){
+    state.lens = { type, power: 1 };
+    state.armed = null;
+    Object.values(chips).forEach(c=>c.classList.remove('armed'));
+    powerRow.style.display = '';
+    if(type==='concave'){ powerSlider.min=0.25; powerSlider.max=4; }
+    else { powerSlider.min=0.25; powerSlider.max=5; }
+    powerSlider.step = 0.25;
+    powerSlider.value = 1;
+    powerVal.textContent = (type==='concave'?'-1.00':'+1.00') + ' D';
+    removeBtn.style.display = '';
+    lensHint.textContent = 'Adjust the slider until the focus dot turns green on the retina.';
+    render();
+  }
+
+  function removeLens(){
+    state.lens = null;
+    powerRow.style.display = 'none';
+    removeBtn.style.display = 'none';
+    lensHint.textContent = 'Tap a lens, then tap the dashed zone in front of the eye — or drag it there.';
+    render();
+  }
+  removeBtn.addEventListener('click', removeLens);
+
+  powerSlider.addEventListener('input', ()=>{
+    if(!state.lens) return;
+    state.lens.power = parseFloat(powerSlider.value);
+    powerVal.textContent = (state.lens.type==='concave'?'-':'+') + state.lens.power.toFixed(2) + ' D';
+    render();
+  });
+
+  let suppressClickUntil = 0;
+  Object.entries(chips).forEach(([type, chip])=>{
+    chip.addEventListener('click', ()=>{
+      if(Date.now() < suppressClickUntil) return;
+      if(state.armed === type){ state.armed = null; chip.classList.remove('armed'); return; }
+      Object.values(chips).forEach(c=>c.classList.remove('armed'));
+      state.armed = type; chip.classList.add('armed');
+      lensHint.textContent = 'Now tap the dashed zone in front of the eye to place it.';
+    });
+
+    let dragging = false, ghost = null, startX=0, startY=0;
+    chip.addEventListener('pointerdown', (e)=>{ startX=e.clientX; startY=e.clientY; dragging=false; chip.setPointerCapture(e.pointerId); });
+    chip.addEventListener('pointermove', (e)=>{
+      const dx=e.clientX-startX, dy=e.clientY-startY;
+      if(!dragging && Math.hypot(dx,dy) > 8){
+        dragging = true;
+        ghost = chip.cloneNode(true);
+        ghost.classList.add('ghost-chip');
+        ghost.style.width = chip.getBoundingClientRect().width+'px';
+        document.body.appendChild(ghost);
+      }
+      if(dragging && ghost){
+        ghost.style.left = e.clientX+'px'; ghost.style.top = e.clientY+'px';
+        const dzRect = dropzone.getBoundingClientRect();
+        const over = e.clientX>=dzRect.left && e.clientX<=dzRect.right && e.clientY>=dzRect.top && e.clientY<=dzRect.bottom;
+        dropzone.classList.toggle('hover', over);
+      }
+    });
+    chip.addEventListener('pointerup', (e)=>{
+      if(dragging){
+        const dzRect = dropzone.getBoundingClientRect();
+        const over = e.clientX>=dzRect.left && e.clientX<=dzRect.right && e.clientY>=dzRect.top && e.clientY<=dzRect.bottom;
+        if(over) placeLens(type);
+        if(ghost) ghost.remove();
+        dropzone.classList.remove('hover');
+        suppressClickUntil = Date.now()+250;
+      }
+      dragging = false; ghost = null;
+    });
+  });
+
+  dropzone.addEventListener('click', ()=>{ if(state.armed) placeLens(state.armed); });
+  setInterval(()=>{ dropzone.classList.toggle('armed-ready', !!state.armed && !state.lens); }, 150);
+
+  function loop(){
+    if(!reduceMotion){ dashOffset += 0.6; render(); }
+    requestAnimationFrame(loop);
+  }
+
+  syncSeverityUI();
+  resize();
+  if(!reduceMotion) requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
